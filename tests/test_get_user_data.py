@@ -11,6 +11,7 @@ SINGLE_USER = "api/users/2"
 SINGLE = "api/unknown/2"
 SINGLE_RESOURCES = "api/unknown/"
 NOT_FOUND_USER = "api/users/23"
+NOT_FOUND_SINGLE_RESOURCES = "api/unknown/23"
 EMAIL_ENDS = "@reqres.in"
 AVATAR_ENDS = "-image.jpg"
 
@@ -86,7 +87,7 @@ def test_list_resources():
 def test_single_resources():
     VALID_ID = 2
     response = httpx.get((BASE_URL+SINGLE_RESOURCES+f"{VALID_ID}"))
-    
+
     # 1) Проверка, что код ответа равен 200
     assert response.status_code == 200
 
@@ -121,3 +122,7 @@ def test_single_resources():
     assert data['color'] == expected_color, f"Ожидали color {expected_color}, но получили {data['color']}"
     assert data['pantone_value'] == expected_pantone_value, f"Ожидали pantone_value {expected_pantone_value}, но получили {data['pantone_value']}"
 
+def test_single_resource_not_found():
+    response = httpx.get(BASE_URL + NOT_FOUND_SINGLE_RESOURCES)
+    # 1)Проверка,что код ответа - 404
+    assert response.status_code == 404
