@@ -1,4 +1,4 @@
-USER_DATA_SCHEME2 = {
+USER_DATA_SCHEME3 = {
     "type": "object",
     "properties": {
         "id": {"type": "number"},
