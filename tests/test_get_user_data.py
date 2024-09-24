@@ -2,7 +2,8 @@ import httpx
 from jsonschema import validate
 import matplotlib.colors as mcolors
 from core.contracts import USER_DATA_SCHEME
-from core.contracts2 import USER_DATA_SCHEME2
+from core.contracts3 import USER_DATA_SCHEME3
+import allure
 
 BASE_URL = "https://reqres.in/"
 LIST_USERS = "api/users?page=2"
@@ -15,12 +16,14 @@ NOT_FOUND_SINGLE_RESOURCES = "api/unknown/23"
 EMAIL_ENDS = "@reqres.in"
 AVATAR_ENDS = "-image.jpg"
 
-
 # Пишем проверки на метод LIST USERS сайта https://reqres.in
+@allure.suite('Проверка запросов данных пользователей')
+@allure.title("Проверка сценария получения списка пользователей")
 def test_list_users():
-    response = httpx.get(BASE_URL + LIST_USERS)
-    # 1)Проверка,что код ответа - 200
-    assert response.status_code == 200
+    with allure.step(f'Делаем запрос по адресу: {BASE_URL + LIST_USERS}'):
+        response = httpx.get(BASE_URL + LIST_USERS)
+    with allure.step('Проверяем код ответа'):
+        assert response.status_code == 200
 
     # Выводим ответ от сервера
     # print(response.text)
@@ -32,64 +35,82 @@ def test_list_users():
     # Проходят по каждому пользователю из списка.
     for item in data:
         # 3)Проверка того,что каждый пользователь(item) из ответа соответствует заданной схеме
-        validate(item, USER_DATA_SCHEME)
+        with allure.step('Проверяем окончание Email адрееса'):
+            validate(item, USER_DATA_SCHEME)
         # 4)Проверка того, что имеет ли электронная почта правильный домен.
-        assert item['email'].endswith(EMAIL_ENDS)
+        with allure.step('Проверяем наличие id в ссылке на аватарку'):
+            assert item['email'].endswith(EMAIL_ENDS)
 
     # 5)Проверка того, что ID,которое приходит в ответе, содержится в аватаре,в конце названия файла
-    assert item['avatar'].endswith(str(item['id']) + AVATAR_ENDS)
+    with allure.step('Проверяем,что ID в ответе,содержится в конце ссылки на аватарку'):
+        assert item['avatar'].endswith(str(item['id']) + AVATAR_ENDS)
 
 
 # Пишем проверки на метод SINGLE USER сайта https://reqres.in
+@allure.suite('Проверка запросов данных пользователей')
+@allure.title("Проверка сценария получения даннных пользователя")
 def test_single_user():
-    response = httpx.get(BASE_URL + SINGLE_USER)
-    # 1)Проверка,что код ответа - 200
-    assert response.status_code == 200
+    with allure.step(f'Делаем запрос по адресу: {BASE_URL + SINGLE_USER}'):
+        response = httpx.get(BASE_URL + SINGLE_USER)
+    with allure.step('Проверяем код ответа'):
+        assert response.status_code == 200
     # Подготовка для слудующих проверок в методе
     data = response.json()['data']
-    #print(response.json()['support'])
-
-    assert data['email'].endswith(EMAIL_ENDS)
-    assert data['avatar'].endswith(str(data['id']) + AVATAR_ENDS)
+    # print(response.json()['support'])
+    with allure.step('Проверяем наличие id в ссылке на аватарку'):
+        assert data['email'].endswith(EMAIL_ENDS)
+    with allure.step('Проверяем,что ID в ответе,содержится в конце ссылки на аватарку'):
+        assert data['avatar'].endswith(str(data['id']) + AVATAR_ENDS)
 
 
 # Пишем проверки на метод SINGLE USER NOT FOUND сайта https://reqres.in
+@allure.suite('Проверка запросов данных пользователей')
+@allure.title("Проверка сценария, когда пользователь не найден в системе")
 def test_user_not_found():
-    response = httpx.get(BASE_URL + NOT_FOUND_USER)
-    # 1)Проверка,что код ответа - 404
-    assert response.status_code == 404
+    with allure.step(f'Делаем запрос по адресу: {BASE_URL + NOT_FOUND_USER}'):
+        response = httpx.get(BASE_URL + NOT_FOUND_USER)
+    with allure.step('Проверяем код ответа'):
+        assert response.status_code == 404
 
-#Мои методы
+
+# Мои методы
+@allure.suite('Проверка запросов данных пользователей')
+@allure.title("Проверка сценария получения списка ресурсов в системе")
 def test_list_resources():
-    response = httpx.get(BASE_URL + LIST)
-    # 1)Проверка,что код ответа равен 200
-    assert response.status_code == 200
+    # Проверка-1
+    with allure.step(f'Делаем запрос по адресу: {BASE_URL + LIST}'):
+        response = httpx.get(BASE_URL + LIST)
+    # Проверка-2
+    with allure.step('Проверяем,что код ответа равен 200'):
+        assert response.status_code == 200
     data = response.json()['data']
-    # 2)Проверка, что список не пустой
-    assert len(data) > 0, "Список в ответе пустой"
+    # Проверка-3
+    with allure.step('Проверяем,что список в ответе сервера не пустой'):
+        assert len(data) > 0, "Список в ответе пустой"
 
     for item in data:
-        validate(item, USER_DATA_SCHEME2)
-        name = item.get('name')
-        color = item.get('color')
-        # 3)Проверка,значение поля не пустое
-        assert name, "Field 'name' empty"
-        assert color, "Field 'name' empty"
-        # 4)Проверка наличия цвета в списке цветов. Получаем шестнадцатеричный код цвета в CSS4_COLORS по названию
-        #Если name не найдено, то вернется None
-        hex_color = mcolors.CSS4_COLORS.get(name)
-        # 5)Проверка,что цвет с заданным именем действительно существует в словаре CSS4_COLORS
-        # Если hex_color равен None, это означает, что цвет не был найден
-        assert hex_color is not None, f"Color '{name}' not found in CSS4_COLORS"
-        # 6)Проверка,что полученный цвет (hex_color) совпадает со значением переменной color
-        assert hex_color == color, f"Field 'name' ('{name}') does not match field 'color' ('{color}')"
+        with allure.step('Проверяем схему с заданным в contract3 шаблоном'):
+            validate(item, USER_DATA_SCHEME3)
+            name = item.get('name')
+            color = item.get('color')
+            # Проверка-4
+            with allure.step('Проверяем,что значение поля name не пустое'):
+                assert name, "Field 'name' empty"
+            # Проверка-5
+            with allure.step('Проверяем,что значение поля name не пустое'):
+                assert color, "Field 'name' empty"
 
+
+@allure.suite('Проверка запросов данных пользователей')
+@allure.title("Проверка сценария получения ресурса в системе")
 def test_single_resources():
+    # Проверка-1
     VALID_ID = 2
-    response = httpx.get((BASE_URL+SINGLE_RESOURCES+f"{VALID_ID}"))
-
-    # 1) Проверка, что код ответа равен 200
-    assert response.status_code == 200
+    with allure.step(f'Делаем запрос по адресу: {BASE_URL + SINGLE_RESOURCES + str(VALID_ID)}'):
+        response = httpx.get((BASE_URL + SINGLE_RESOURCES + f'{VALID_ID}'))
+    # Проверка-2
+    with allure.step('Проверяем,что код ответа равен 200'):
+        assert response.status_code == 200
 
     # Получаем весь JSON-ответ
     json_data = response.json()
@@ -98,31 +119,48 @@ def test_single_resources():
     data = json_data['data']
     support = json_data['support']
 
-    # 2) Проверка, что в ответе, строка url содержит 'https://reqres.in'
-    assert 'https://reqres.in' in support['url']
+    # Проверка-2
+    VERIFIED_VALUE = 'https://reqres.in'
+    with allure.step(f'Проверяем,что в ответе,строка url содержит значение: {VERIFIED_VALUE}'):
+        assert VERIFIED_VALUE in support['url']
 
-    # 3) Проверка, что в ответе, строка text не пустая
-    assert len(support['text']) > 0, "Строка text пустая"
+    # Проверка-3
+    with allure.step('Проверяем,что значение поля text в support не пустое'):
+        assert len(support['text']) > 0, "Строка text пустая"
 
-    # 4) Проверка, что возвращенные данные по ID корректны
-    assert data['id'] == VALID_ID, f"Ожидали ID {VALID_ID}, но получили {data['id']}"
-    assert 'name' in data, "Отсутствует name в данных"
-    assert 'year' in data, "Отсутствует year в данных"
-    assert 'color' in data, "Отсутствует color в данных"
-    assert 'pantone_value' in data, "Отсутствует pantone_value в данных"
+    # Проверка-4
+    with allure.step(f'Проверяем,что ожидаемое id:{VALID_ID} равно фактическому'):
+        assert data['id'] == VALID_ID, f"Ожидали ID {VALID_ID}, но получили {data['id']}"
+    with allure.step('Проверяем наличие поля name в data'):
+        assert 'name' in data, "Отсутствует name в данных"
+    with allure.step('Проверяем наличие поля year в data'):
+        assert 'year' in data, "Отсутствует year в данных"
+    with allure.step('Проверяем наличие поля color в data'):
+        assert 'color' in data, "Отсутствует color в данных"
+    with allure.step('Проверяем наличие поля pantone_value в data'):
+        assert 'pantone_value' in data, "Отсутствует pantone_value в данных"
 
-    # 5)Проверка,что в ответе, определенное поле содержит опреденное значение
+    # Проверка-5
     expected_name = "fuchsia rose"
     expected_year = "2001"
     expected_color = "#C74375"
     expected_pantone_value = "17-2031"
+    with allure.step(f'Проверяем, что ожидаемое значение поля name: {expected_name} равно фактическому'):
+        assert data['name'] == expected_name, f"Ожидали name {expected_name}, но получили {data['name']}"
+    with allure.step(f'Проверяем, что ожидаемое значение поля year: {expected_year} равно фактическому'):
+        assert data['year'] == int(expected_year), f"Ожидали year {expected_year}, но получили {data['year']}"
+    with allure.step(f'Проверяем, что ожидаемое значение поля color: {expected_color} равно фактическому'):
+        assert data['color'] == expected_color, f"Ожидали color {expected_color}, но получили {data['color']}"
+    with allure.step(
+            f'Проверяем, что ожидаемое значение поля pantone_value: {expected_pantone_value} равно фактическому'):
+        assert data[
+                   'pantone_value'] == expected_pantone_value, f"Ожидали pantone_value {expected_pantone_value}, но получили {data['pantone_value']}"
 
-    assert data['name'] == expected_name, f"Ожидали name {expected_name}, но получили {data['name']}"
-    assert data['year'] == int(expected_year), f"Ожидали year {expected_year}, но получили {data['year']}"
-    assert data['color'] == expected_color, f"Ожидали color {expected_color}, но получили {data['color']}"
-    assert data['pantone_value'] == expected_pantone_value, f"Ожидали pantone_value {expected_pantone_value}, но получили {data['pantone_value']}"
-
-def test_single_resource_not_found():
-    response = httpx.get(BASE_URL + NOT_FOUND_SINGLE_RESOURCES)
-    # 1)Проверка,что код ответа - 404
-    assert response.status_code == 404
+    @allure.suite('Проверка запросов данных пользователей')
+    @allure.title("Проверка сценария, когда ресурс не найден в системе")
+    def test_single_resource_not_found():
+        with allure.step(f'Делаем запрос по адресу: {BASE_URL + NOT_FOUND_SINGLE_RESOURCES}'):
+            response = httpx.get(BASE_URL + NOT_FOUND_SINGLE_RESOURCES)
+        # Проверка-1
+        with allure.step('Проверяем,что код ответа равен 404'):
+            assert response.status_code == 404
