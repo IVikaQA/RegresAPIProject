@@ -40,3 +40,13 @@ LIST_USER_DATA_SCHEME = {
     },
     "required": ["id", "name", "year", "color", "pantone_value"]
 }
+
+REGISTERED_USER_SCHEME = {
+"type": "object",
+    "properties": {
+        "id": {"type": "string"},
+        "token": {"type": "number"}
+    },
+    "required": ["id","token"]
+}
+
