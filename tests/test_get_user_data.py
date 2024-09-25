@@ -2,7 +2,7 @@ import httpx
 from jsonschema import validate
 import matplotlib.colors as mcolors
 from core.contracts import USER_DATA_SCHEME
-from core.contracts3 import USER_DATA_SCHEME3
+from core.contracts import LIST_USER_DATA_SCHEME
 import allure
 
 BASE_URL = "https://reqres.in/"
@@ -89,8 +89,8 @@ def test_list_resources():
         assert len(data) > 0, "Список в ответе пустой"
 
     for item in data:
-        with allure.step('Проверяем схему с заданным в contract3 шаблоном'):
-            validate(item, USER_DATA_SCHEME3)
+        with allure.step('Проверяем схему с заданным в contract шаблоном LIST_USER_DATA_SCHEME'):
+            validate(item, LIST_USER_DATA_SCHEME)
             name = item.get('name')
             color = item.get('color')
             # Проверка-4
