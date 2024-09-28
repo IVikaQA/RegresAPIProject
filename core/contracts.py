@@ -44,9 +44,25 @@ LIST_USER_DATA_SCHEME = {
 REGISTERED_USER_SCHEME = {
 "type": "object",
     "properties": {
-        "id": {"type": "string"},
-        "token": {"type": "number"}
+        "id": {"type": "number"},
+        "token": {"type": "string"}
     },
     "required": ["id","token"]
+}
+
+USER_REGISTER_DATA_SCHEME = {
+    "type": "object",
+    "properties": {
+        "token": {"type": "string"}
+    },
+    "required": ["token"]
+}
+
+USER_REGISTER_DATA_SCHEME = {
+    "type": "object",
+    "properties": {
+        "token": {"type": "string"}
+    },
+    "required": ["token"]
 }
 
