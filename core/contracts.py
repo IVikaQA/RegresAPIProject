@@ -58,11 +58,3 @@ USER_REGISTER_DATA_SCHEME = {
     "required": ["token"]
 }
 
-USER_REGISTER_DATA_SCHEME = {
-    "type": "object",
-    "properties": {
-        "token": {"type": "string"}
-    },
-    "required": ["token"]
-}
-
