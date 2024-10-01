@@ -80,3 +80,21 @@ def test_login_user(json_data_parametr):
             validate(data, USER_REGISTER_DATA_SCHEME)
         except Exception as e:
             allure.attach(str(e), name="Ошибка при валидации", attachment_type=allure.attachment_type.TEXT)
+
+#В тесте показывается передача, например, заголовков в тесте
+@pytest.mark.parametrize('users_data',user_data)
+def test_successful_register(users_data):
+    headers = {'Content-Type': 'application/json'}
+    response = httpx.post(BASE_URL+REGISTER_USER,json=users_data,headers=headers)
+    print(users_data)
+    assert response.status_code == 200
+    validate(response.json(),REGISTERED_USER_SCHEME)
+
+#В тесте показывается использование задержки при обработке ответа от сервера
+#timeout - это то время,которое мы ждем перед тем,как завершить выполнение запроса
+#Вариант использования 1:timeout используем,например, когда видим,что тест выполняется долго
+#Вариант  использования 2:Например,запрос который мы тестируем должен выполняться 2 секунды
+# и значит мы ставим в автотесте timeout и потом в отчете увидим,что тест выполняется больше 4-х сек
+def test_deleyed_user_list():
+    response = httpx.get(BASE_URL+DELAYED_REQUEST,timeout=4)
+    assert response.status_code == 200
