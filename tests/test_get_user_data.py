@@ -1,6 +1,5 @@
 import httpx
 from jsonschema import validate
-import matplotlib.colors as mcolors
 from core.contracts import USER_DATA_SCHEME
 from core.contracts import LIST_USER_DATA_SCHEME
 import allure
@@ -16,7 +15,6 @@ NOT_FOUND_SINGLE_RESOURCES = "api/unknown/23"
 EMAIL_ENDS = "@reqres.in"
 AVATAR_ENDS = "-image.jpg"
 
-# Пишем проверки на метод LIST USERS сайта https://reqres.in
 @allure.suite('Проверка запросов данных пользователей')
 @allure.title("Проверка сценария получения списка пользователей")
 def test_list_users():
@@ -25,28 +23,18 @@ def test_list_users():
     with allure.step('Проверяем код ответа'):
         assert response.status_code == 200
 
-    # Выводим ответ от сервера
-    # print(response.text)
-    # Подготовка для других проверок ниже.Берем часть ответа
     data = response.json()['data']
 
-    # 2)Проверка схемы с помощью функции validate
-    # Порядок: 1-ый параметры - Что проверяем; 2-ой параметр - С чем сравниваем ответ
-    # Проходят по каждому пользователю из списка.
     for item in data:
-        # 3)Проверка того,что каждый пользователь(item) из ответа соответствует заданной схеме
         with allure.step('Проверяем окончание Email адрееса'):
             validate(item, USER_DATA_SCHEME)
-        # 4)Проверка того, что имеет ли электронная почта правильный домен.
         with allure.step('Проверяем наличие id в ссылке на аватарку'):
             assert item['email'].endswith(EMAIL_ENDS)
 
-    # 5)Проверка того, что ID,которое приходит в ответе, содержится в аватаре,в конце названия файла
     with allure.step('Проверяем,что ID в ответе,содержится в конце ссылки на аватарку'):
         assert item['avatar'].endswith(str(item['id']) + AVATAR_ENDS)
 
 
-# Пишем проверки на метод SINGLE USER сайта https://reqres.in
 @allure.suite('Проверка запросов данных пользователей')
 @allure.title("Проверка сценария получения даннных пользователя")
 def test_single_user():
@@ -54,16 +42,12 @@ def test_single_user():
         response = httpx.get(BASE_URL + SINGLE_USER)
     with allure.step('Проверяем код ответа'):
         assert response.status_code == 200
-    # Подготовка для слудующих проверок в методе
     data = response.json()['data']
-    # print(response.json()['support'])
     with allure.step('Проверяем наличие id в ссылке на аватарку'):
         assert data['email'].endswith(EMAIL_ENDS)
     with allure.step('Проверяем,что ID в ответе,содержится в конце ссылки на аватарку'):
         assert data['avatar'].endswith(str(data['id']) + AVATAR_ENDS)
 
-
-# Пишем проверки на метод SINGLE USER NOT FOUND сайта https://reqres.in
 @allure.suite('Проверка запросов данных пользователей')
 @allure.title("Проверка сценария, когда пользователь не найден в системе")
 def test_user_not_found():
